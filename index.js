@@ -1,23 +1,20 @@
 const express = require('express')
 const http = require('http')
 const path = require('path')
-import { router } from "./routers/app.routers.js";
-import { ProductosApi } from "./models/productos/productos.api.js";
-import { ChatApi } from "./models/chat/chat.api.js";
+const router = require('./routers/app.routers')
+const { ProductosDaoMongoDb } = require('./models/index')
+const { ChatDaoMongoDb } = require('./models/index')
 
 const app = express()
 const server = http.createServer(app)
 const io = require('socket.io')(server)
 
-const chat = new ChatApi("chat")
-const productos = new ProductosApi("productos")
+const chat = new ChatDaoMongoDb("chat")
+const productos = new ProductosDaoMongoDb("productos")
 const PORT = process.env.PORT || 8080;
 
 
-// Template Engines
-// app.set('views', './view');
-// app.set('view engine', 'pug');
-app.use('/static', express.static(__dirname + '/public'));
+app.use(express.static('public'));
 
 // Rutas
 app.get('/', (req, res) => {
@@ -25,15 +22,17 @@ app.get('/', (req, res) => {
 })
 app.use(router);
 
-io.on('connection', socket => {
-  emitir()
+io.on('connection', async (socket) => {
+  const lista = await chat.listarAll()
+  emitir(lista)
 
-  socket.on("incomingMessage", message =>{
-    chat.push(message)
-    emitir()
+  socket.on("incomingMessage", async (message) =>{
+    await chat.guardar(message)
+    // console.log(lista)
+    emitir(lista)
   })
 })
 
-const emitir = () => io.sockets.emit("chat", chat)
+const emitir = (mensajes = []) => io.sockets.emit("chat", mensajes)
 
 server.listen(PORT, () => { console.log(`Running on port: ${PORT}`)})

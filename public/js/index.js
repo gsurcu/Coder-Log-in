@@ -1,11 +1,13 @@
 const socket = io()
 
-const button = document.getElementById("buttonSocket")
+// const button = document.getElementById("buttonSocket")
 
 const sendMessage = (e) => {
   const hoy = new Date()
   const message = {
-    mail: document.getElementById("nombreUsuario").value,
+    author: {
+      alias: document.getElementById("nombreUsuario").value
+    },
     text: document.getElementById("mensaje").value,
     fecha: hoy.toLocaleDateString() + ' ' + hoy.getHours() + ':' + hoy.getMinutes() + ':' + hoy.getSeconds()
   };
@@ -15,13 +17,14 @@ const sendMessage = (e) => {
   document.getElementById("mensaje").focus();
 }
 
-button.addEventListener("click", sendMessage);
+// button.addEventListener("click", sendMessage);
 
 socket.on("chat", messages => {
+  console.log(messages);
   const texto = messages.map( mensaje => {
     return(`
     <div>
-      <strong class="azul">${mensaje.mail} </strong>
+      <strong class="azul">${mensaje.author.alias} </strong>
       [<span class="marron">${mensaje.fecha}</span>]:
       <em class="verde"> ${mensaje.text}</em>
     </div>`);
