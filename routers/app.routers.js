@@ -4,6 +4,8 @@ const MongoStore = require('connect-mongo');
 const { ProductosDaoMongoDb } = require('../models/index')
 const rutasProductos = require('./productos/productos.routes')
 const config = require('../config/config')
+const rutasLogin = require('./login/login.routes')
+
 const router = express.Router();
 const productos = new ProductosDaoMongoDb("productos")
 
@@ -24,6 +26,7 @@ router.use(session({
   }
 }));
 // Rutas
+router.use('/', rutasLogin)
 router.use('/api/productos', rutasProductos);
 router.use('/api/*', (req, res) => {
   res.status(404).json({
