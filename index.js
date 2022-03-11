@@ -13,13 +13,6 @@ const chat = new ChatDaoMongoDb("chat")
 const productos = new ProductosDaoMongoDb("productos")
 const PORT = process.env.PORT || 8080;
 
-
-app.use(express.static('public'));
-
-// Rutas
-app.get('/', (req, res) => {
-  res.sendFile(__dirname +'/public/index.html')
-})
 app.use(router);
 
 io.on('connection', async (socket) => {
@@ -28,7 +21,6 @@ io.on('connection', async (socket) => {
 
   socket.on("incomingMessage", async (message) =>{
     await chat.guardar(message)
-    // console.log(lista)
     emitir(lista)
   })
 })

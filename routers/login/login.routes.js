@@ -5,6 +5,7 @@ const auth = require('../../middlewares/auth');
 const users = [...require('../../data/users.json')];
 
 const app = express();
+app.use(express.static('public'));
 
 // Template engines
 app.set('views', './views');
@@ -12,20 +13,25 @@ app.set('view engine', 'ejs');
 
 // Routes
 app.get('/', (req, res) => {
-  const user = req.session.user;
-  if (user) {
-    return res.redirect('/profile');
-  }
-  else {
-    return res.sendFile(__dirname+'/public/login.html');
-  }
-  
+  res.render('login', { sessionUser: false });
+  console.log('login')
 });
+// app.get('/profile', auth, async (req, res) => {
+//   const user = await req.session.user;
+//   res.render('profile', { sessionUser: user });
+// });
 
-app.get('/profile', auth, async (req, res) => {
+app.get('/login', async (req, res) => {
   const user = await req.session.user;
-  res.render('profile', { sessionUser: user });
-});
+  if (user) {
+    res.render('login', { 
+      sessionUser: user,
+      user: {name:'nombre'}
+    });
+  } else {
+    res.render('login', { sessionUser: false });
+  }
+})
 
 app.get('/logout', auth, async (req, res) => {
   try {
@@ -63,26 +69,7 @@ app.post('/login', (req, res) => {
   const user = users.find(user => user.email === email);
   if (!user) return res.redirect('/error');
   req.session.user = user;
-  res.redirect('/profile');
-});
-
-app.post('/transfer', auth, (req, res) => {
-  const {  receiverAccount, senderAccount, amount, } = req.body;
-  const sessionUser = req.session.user;
-
-  const userAccount = sessionUser.accounts.find(account => account.number === senderAccount);
-  if (+amount > userAccount.balance || userAccount.delinquent) return res.redirect('/notenoughfunds');
-
-  const receiver = users.find(user => user.accounts.some(account => account.number === receiverAccount));
-  if (!receiver) return res.redirect('/error');
-  
-  const targetAccount = receiver.accounts.find(account => account.number === receiverAccount);
-  
-  targetAccount.balance += +amount;
-  userAccount.balance -= +amount;
-
-  receiver.balance += +amount;
-  res.sendFile(__dirname + '/public/success.html');
+  res.redirect('/login');
 });
 
 module.exports = app;

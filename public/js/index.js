@@ -20,7 +20,6 @@ const sendMessage = (e) => {
 // button.addEventListener("click", sendMessage);
 
 socket.on("chat", messages => {
-  console.log(messages);
   const texto = messages.map( mensaje => {
     return(`
     <div>
@@ -29,8 +28,6 @@ socket.on("chat", messages => {
       <em class="verde"> ${mensaje.text}</em>
     </div>`);
   }).join("")
-
-  console.log(texto);
 
   document.getElementById("messages").innerHTML = texto;
 })
