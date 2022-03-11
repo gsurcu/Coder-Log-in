@@ -29,10 +29,9 @@
     </div>
   <% } else { %>
     <div class="seccion">
-      <h1>Bienvenido <%=user.name%> </h1>
-      <span class="btn btn-danger" onclick="logout()">Logout</span>
+      <h1>Bienvenido <%=sessionUser.name%> </h1>
+      <span class="" onclick="logout()">Logout</span>
     </div>
-
 
     <div class="seccion">
       <div class="form">
@@ -53,7 +52,19 @@
       <div class="productos">
         <h2 class="azul">Vista de Productos</h2>
         <div class="cards" id="cards">
-          
+          <% if (productos) {%> 
+            <% for (const prod of productos) { %>
+              <article id=<%=prod?.id%> class="container-card">
+                <div class="card">
+                  <img src=<%=prod?.imagen%> alt=<%=prod?.nombre%>/>
+                  <div class="card-body">
+                    <h4 class="card-title"><%=prod?.nombre%></h4>
+                    <p class="card-text">Precio: <%=prod?.precio%></p>
+                  </div>
+                </div>
+              </article>
+            <% } %>
+          <% } %>
         </div>
       </div>
     </div>

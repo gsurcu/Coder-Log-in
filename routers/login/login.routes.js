@@ -12,7 +12,11 @@ app.set('views', './views');
 app.set('view engine', 'ejs');
 
 // Routes
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
+  const user = await req.session.user;
+  if (user) {
+    return res.redirect('/login');
+  }
   res.render('login', { sessionUser: false });
   console.log('login')
 });
@@ -26,10 +30,8 @@ app.get('/login', async (req, res) => {
   if (user) {
     res.render('login', { 
       sessionUser: user,
-      user: {name:'nombre'}
+      productos: false
     });
-  } else {
-    res.render('login', { sessionUser: false });
   }
 })
 
