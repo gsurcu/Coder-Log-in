@@ -10,7 +10,13 @@
 </head>
 <body>
   <div class="seccion">
-    <h1>Hasta luego <%= user.name %> </h1>
+    <h1>Hasta luego <%= name %> </h1>
+    <button class="btn btn-primary" onclick="return redirectToHome()">Volver</button>
   </div>
+  <script>
+    const redirectToHome = () => {
+      window.location.href = '/';
+    };
+  </script>
 </body>
 </html>

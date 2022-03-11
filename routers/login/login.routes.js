@@ -1,11 +1,28 @@
 const fs = require('fs/promises');
 const express = require('express');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+const path = require('path')
+
+const config = require('../../config/config')
 const auth = require('../../middlewares/auth');
 
 const users = [...require('../../data/users.json')];
 
 const app = express();
 app.use(express.static('public'));
+app.use(session({
+  name: 'my-session',
+  secret: 'top-secret-51',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ 
+    mongoUrl: config.mongodb
+  }),
+  cookie: {
+    maxAge: 600000
+  }
+}));
 
 // Template engines
 app.set('views', './views');
@@ -18,14 +35,13 @@ app.get('/', async (req, res) => {
     return res.redirect('/login');
   }
   res.render('login', { sessionUser: false });
-  console.log('login')
 });
 // app.get('/profile', auth, async (req, res) => {
 //   const user = await req.session.user;
 //   res.render('profile', { sessionUser: user });
 // });
 
-app.get('/login', async (req, res) => {
+app.get('/login', auth, async (req, res) => {
   const user = await req.session.user;
   if (user) {
     res.render('login', { 
@@ -37,7 +53,9 @@ app.get('/login', async (req, res) => {
 
 app.get('/logout', auth, async (req, res) => {
   try {
-    await fs.writeFile('../../data/users.json', JSON.stringify(users));
+    const name = await req.session.user.name;
+    console.log('logout')
+    await fs.writeFile(path.join(__dirname,'../../data/users.json'), JSON.stringify(users));
     req.session.destroy(err => {
       if (err) {
         console.log(err);
@@ -45,7 +63,7 @@ app.get('/logout', auth, async (req, res) => {
       }
       else {
         res.clearCookie('my-session');
-        res.redirect('/');
+        res.render('logout',{name: name})
       }
     })
   }
@@ -55,15 +73,15 @@ app.get('/logout', auth, async (req, res) => {
 });
 
 app.get('/unauthorized', (req, res) => {
-  res.status(401).sendFile(__dirname+'/public/unauthorized.html');
+  res.status(401).sendFile(path.join(__dirname,'../../public/unauthorized.html'));
 });
 
 app.get('/notenoughfunds', auth, (req, res) => {
-  res.status(400).sendFile(__dirname+'/public/notenough.html');
+  res.status(400).sendFile(path.join(__dirname,'../../public/notenough.html'));
 });
 
 app.get('/error', (req, res) => {
-  res.status(500).sendFile(__dirname+'/public/error.html');
+  res.status(500).sendFile(path.join(__dirname,'../../public/error.html'));
 });
 
 app.post('/login', (req, res) => {
